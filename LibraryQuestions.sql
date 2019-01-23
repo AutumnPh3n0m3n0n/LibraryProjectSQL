@@ -23,12 +23,11 @@ GO
 
 
 --Step 3: Retrieve the names of all borrowers who do not have any books checked out.
-		SELECT dbo.book_loans.card_number as 'ID Number:',
-		COUNT(*) as 'Number of Loans'
-		FROM dbo.book_loans
-		INNER JOIN dbo.borrowers ON dbo.borrowers.card_number = dbo.book_loans.card_number
-		GROUP BY dbo.book_loans.card_number
-		HAVING COUNT(*) = 0
+	SELECT dbo.borrowers.person_fname as 'First Name:', dbo.borrowers.person_lname as 'Last Name:',
+		dbo.borrowers.person_address as 'Address:', dbo.book_loans.card_number as 'Card Number:'
+		FROM book_loans
+		RIGHT JOIN dbo.borrowers ON dbo.borrowers.card_number = dbo.book_loans.card_number
+		WHERE book_loans.card_number IS NULL
 
 --Step 4: For each book that is loaned out from the "Sharpstown" branch and whose DueDate is today, retrieve the book title, the borrower's name, and the borrower's address.
 		SELECT 
@@ -43,27 +42,29 @@ GO
 
 
 --Step 5: For each library branch, retrieve the branch name and the total number of books loaned out from that branch.
-		SELECT SUM(dbo.book_copies.num_of_copies) as 'Total Number of Books:', dbo.book_copies.branch_id as 'Branch ID:'
+		SELECT dbo.library_branch.branch_name as 'Branch:', SUM(dbo.book_copies.num_of_copies) as 'Total Number of Books:'
 			FROM dbo.book_copies
 			INNER JOIN dbo.library_branch ON dbo.library_branch.branch_id = dbo.book_copies.branch_id
-			GROUP BY dbo.book_copies.branch_id
+			GROUP BY dbo.library_branch.branch_name
 
 
 
 --Step 6: Retrieve the names, addresses, and the number of books checked out for all borrowers who have more than five books checked out.
-	SELECT dbo.book_loans.card_number as 'Library Branch:',
-		COUNT(*) as 'Number of Loans'
+	SELECT dbo.borrowers.person_fname as 'First Name:', dbo.borrowers.person_lname as 'Last Name:',
+		dbo.borrowers.person_address as 'Address:',COUNT(*) as 'Number of Loans'
 		FROM dbo.book_loans
 		INNER JOIN dbo.borrowers ON dbo.borrowers.card_number = dbo.book_loans.card_number
-		GROUP BY dbo.book_loans.card_number
+		GROUP BY dbo.borrowers.person_fname, dbo.borrowers.person_lname, dbo.borrowers.person_address 
 		HAVING COUNT(*) > 5
 
 
 --Step 7: For each book authored (or co-authored) by "Stephen King", retrieve the title and the number of copies owned by the library branch whose name is "Central".
 
 	SELECT
-		dbo.books.book_title as 'Title:', dbo.book_authors.author_fname as 'Author First Name:',
-		dbo.book_authors.author_lname as 'Author Last Name:', dbo.library_branch.branch_name as 'Branch:'
+		dbo.books.book_title as 'Title:', dbo.books.book_genre as 'Genre:',
+		dbo.book_authors.author_fname as 'Author First Name:',
+		dbo.book_authors.author_lname as 'Author Last Name:', dbo.library_branch.branch_name as 'Branch:',
+		dbo.book_copies.num_of_copies as 'Number of Copies:'
 		FROM book_copies
 		INNER JOIN dbo.books ON dbo.books.book_id = dbo.book_copies.book_id
 		INNER JOIN dbo.book_authors ON dbo.book_authors.book_id = dbo.books.book_id
